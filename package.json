@@ -1,1 +1,13 @@
-{\n  "name": "vue3-mindmap-component",\n  "version": "1.0.0",\n  "description": "A Vue 3 component for mind mapping.",\n  "main": "dist/index.js",\n  "scripts": {\n    "build": "vue-cli-service build",\n    "serve": "vue-cli-service serve"\n  },\n  "dependencies": {\n    "vue": "^3.0.0"\n  },\n  "devDependencies": {\n    "@vue/cli-service": "^4.5.0"\n  },\n  "license": "MIT"\n}
+{
+  "name": "vue3-mindmap-component",
+  "version": "1.0.0",
+  "description": "A Vue 3 Mindmap Component",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "vue-cli-service build",
+    "serve": "vue-cli-service serve"
+  },
+  "dependencies": {
+    "vue": "^3.0.0"
+  }
+}
