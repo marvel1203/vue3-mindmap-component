@@ -65,8 +65,7 @@ export default {
         left: `${minX - 10}px`,
         top: `${minY - 10}px`,
         width: `${maxX - minX + 20}px`,
-        height: `${maxY - minY + 20}px`,
-        pointerEvents: 'none'
+        height: `${maxY - minY + 20}px`
       };
     },
     pathData() {

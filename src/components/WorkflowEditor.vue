@@ -88,7 +88,8 @@ export default {
       draggingNode: null,
       dragOffset: { x: 0, y: 0 },
       tempConnection: null,
-      connectingFrom: null
+      connectingFrom: null,
+      sourceNodeId: null
     };
   },
   methods: {
@@ -146,9 +147,45 @@ export default {
         this.draggingNode = null;
       }
       
-      if (this.tempConnection) {
+      if (this.tempConnection && this.sourceNodeId) {
+        // Check if mouse up is on a valid input port
+        const target = event.target;
+        if (target.classList.contains('port') && target.dataset.port === 'input') {
+          const nodeEl = target.closest('.workflow-node');
+          if (nodeEl) {
+            // Find the target node by matching position
+            const nodeRect = nodeEl.getBoundingClientRect();
+            const canvas = this.$refs.editorContainer;
+            const canvasRect = canvas.getBoundingClientRect();
+            const targetX = nodeRect.left - canvasRect.left;
+            const targetY = nodeRect.top - canvasRect.top;
+            
+            // Find the node with matching position
+            const targetNode = this.nodes.find(n => 
+              Math.abs(n.x - targetX) < 5 && Math.abs(n.y - targetY) < 5
+            );
+            
+            if (targetNode && targetNode.id !== this.sourceNodeId) {
+              // Create new connection
+              const newConnection = {
+                fromId: this.sourceNodeId,
+                toId: targetNode.id,
+                startX: this.tempConnection.startX,
+                startY: this.tempConnection.startY,
+                endX: nodeRect.left - canvasRect.left,
+                endY: nodeRect.top - canvasRect.top + nodeRect.height / 2
+              };
+              
+              const newConnections = [...this.connections, newConnection];
+              this.$emit('update:connections', newConnections);
+              this.$emit('connection-create', newConnection);
+            }
+          }
+        }
+        
         this.tempConnection = null;
         this.connectingFrom = null;
+        this.sourceNodeId = null;
       }
     },
     handleCanvasMouseDown(event) {
@@ -157,22 +194,33 @@ export default {
       if (target.classList.contains('port') && target.dataset.port === 'output') {
         const nodeEl = target.closest('.workflow-node');
         if (nodeEl) {
-          // Find which node this belongs to
+          // Find which node this belongs to by matching position
           const nodeRect = nodeEl.getBoundingClientRect();
           const canvas = this.$refs.editorContainer;
           const canvasRect = canvas.getBoundingClientRect();
+          const nodeX = nodeRect.left - canvasRect.left;
+          const nodeY = nodeRect.top - canvasRect.top;
           
-          this.connectingFrom = {
-            x: nodeRect.right - canvasRect.left,
-            y: nodeRect.top - canvasRect.top + nodeRect.height / 2
-          };
+          // Find the node with matching position
+          const sourceNode = this.nodes.find(n => 
+            Math.abs(n.x - nodeX) < 5 && Math.abs(n.y - nodeY) < 5
+          );
           
-          this.tempConnection = {
-            startX: this.connectingFrom.x,
-            startY: this.connectingFrom.y,
-            endX: event.clientX - canvasRect.left,
-            endY: event.clientY - canvasRect.top
-          };
+          if (sourceNode) {
+            this.sourceNodeId = sourceNode.id;
+            
+            this.connectingFrom = {
+              x: nodeRect.right - canvasRect.left,
+              y: nodeRect.top - canvasRect.top + nodeRect.height / 2
+            };
+            
+            this.tempConnection = {
+              startX: this.connectingFrom.x,
+              startY: this.connectingFrom.y,
+              endX: event.clientX - canvasRect.left,
+              endY: event.clientY - canvasRect.top
+            };
+          }
         }
       }
     },
