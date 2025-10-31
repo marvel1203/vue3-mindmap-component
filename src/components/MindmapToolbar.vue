@@ -8,17 +8,24 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue';
-
-export default defineComponent({
+export default {
   name: 'MindmapToolbar',
+  emits: ['undo', 'redo', 'add-node', 'delete-node'],
   methods: {
-    undo() {},
-    redo() {},
-    addNode() {},
-    deleteNode() {},
+    undo() {
+      this.$emit('undo');
+    },
+    redo() {
+      this.$emit('redo');
+    },
+    addNode() {
+      this.$emit('add-node');
+    },
+    deleteNode() {
+      this.$emit('delete-node');
+    },
   },
-});
+};
 </script>
 
 <style scoped>

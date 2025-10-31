@@ -5,11 +5,25 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue';
-
-export default defineComponent({
+export default {
   name: 'MindmapEditor',
-});
+  props: {
+    data: {
+      type: Array,
+      default: () => []
+    },
+    options: {
+      type: Object,
+      default: () => ({})
+    }
+  },
+  emits: ['node-click'],
+  methods: {
+    handleNodeClick(node) {
+      this.$emit('node-click', node);
+    }
+  }
+};
 </script>
 
 <style scoped>
