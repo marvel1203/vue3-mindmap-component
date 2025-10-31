@@ -29,8 +29,7 @@ export default {
   props: {
     node: {
       type: Object,
-      required: true,
-      default: () => ({ label: '', x: 0, y: 0, id: '' })
+      required: true
     },
     showDelete: {
       type: Boolean,

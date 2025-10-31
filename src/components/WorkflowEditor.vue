@@ -89,10 +89,17 @@ export default {
       dragOffset: { x: 0, y: 0 },
       tempConnection: null,
       connectingFrom: null,
-      sourceNodeId: null
+      sourceNodeId: null,
+      POSITION_MATCH_TOLERANCE: 5
     };
   },
   methods: {
+    findNodeByPosition(x, y) {
+      return this.nodes.find(n => 
+        Math.abs(n.x - x) < this.POSITION_MATCH_TOLERANCE && 
+        Math.abs(n.y - y) < this.POSITION_MATCH_TOLERANCE
+      );
+    },
     handleNodeClick(data) {
       this.$emit('node-click', data);
     },
@@ -161,9 +168,7 @@ export default {
             const targetY = nodeRect.top - canvasRect.top;
             
             // Find the node with matching position
-            const targetNode = this.nodes.find(n => 
-              Math.abs(n.x - targetX) < 5 && Math.abs(n.y - targetY) < 5
-            );
+            const targetNode = this.findNodeByPosition(targetX, targetY);
             
             if (targetNode && targetNode.id !== this.sourceNodeId) {
               // Create new connection
@@ -172,8 +177,8 @@ export default {
                 toId: targetNode.id,
                 startX: this.tempConnection.startX,
                 startY: this.tempConnection.startY,
-                endX: nodeRect.left - canvasRect.left,
-                endY: nodeRect.top - canvasRect.top + nodeRect.height / 2
+                endX: targetX,
+                endY: targetY + nodeRect.height / 2
               };
               
               const newConnections = [...this.connections, newConnection];
@@ -202,9 +207,7 @@ export default {
           const nodeY = nodeRect.top - canvasRect.top;
           
           // Find the node with matching position
-          const sourceNode = this.nodes.find(n => 
-            Math.abs(n.x - nodeX) < 5 && Math.abs(n.y - nodeY) < 5
-          );
+          const sourceNode = this.findNodeByPosition(nodeX, nodeY);
           
           if (sourceNode) {
             this.sourceNodeId = sourceNode.id;
