@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue3 Mindmap 调试示例页面</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .control-panel {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .control-panel h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #374151;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 8px;
+        }
+
+        .control-group input,
+        .control-group select,
+        .control-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .control-group textarea {
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+
+        .control-group button {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .control-group button:hover {
+            background: #5568d3;
+        }
+
+        .control-group button:active {
+            transform: scale(0.98);
+        }
+
+        .preview-area {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            min-height: 600px;
+        }
+
+        .preview-area h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #374151;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .mindmap-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .mindmap-toolbar button {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mindmap-toolbar button:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .mindmap-editor {
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
+            padding: 30px;
+            min-height: 400px;
+            background: #fafafa;
+            position: relative;
+        }
+
+        .mindmap-canvas {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .mindmap-node {
+            padding: 15px 20px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .mindmap-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .mindmap-node.selected {
+            background: #667eea;
+            color: white;
+            border-color: #5568d3;
+        }
+
+        .mindmap-node.child {
+            margin-left: 40px;
+            border-color: #a78bfa;
+        }
+
+        .debug-info {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .debug-info h3 {
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .debug-info pre {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .instructions {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .instructions h3 {
+            color: #1e40af;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            color: #1e3a8a;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+            <div class="header">
+                <h1>🧠 Vue3 Mindmap 调试示例页面</h1>
+                <p>一个功能完整的思维导图组件调试和测试环境</p>
+            </div>
+
+            <div class="main-content">
+                <!-- 左侧控制面板 -->
+                <div class="control-panel">
+                    <h2>⚙️ 控制面板</h2>
+
+                    <div class="instructions">
+                        <h3>使用说明：</h3>
+                        <ul>
+                            <li>点击节点选择或取消选择</li>
+                            <li>使用工具栏按钮操作节点</li>
+                            <li>在控制面板中修改数据</li>
+                            <li>查看实时调试信息</li>
+                        </ul>
+                    </div>
+
+                    <div class="control-group">
+                        <label>节点标签：</label>
+                        <input id="newNodeLabel" type="text" placeholder="输入新节点标签">
+                    </div>
+
+                    <div class="control-group">
+                        <button data-action="addNewNode">➕ 添加节点</button>
+                    </div>
+
+                    <div class="control-group">
+                        <button data-action="deleteSelectedNode">🗑️ 删除选中节点</button>
+                    </div>
+
+                    <div class="control-group">
+                        <label>思维导图数据 (JSON)：</label>
+                        <textarea id="dataJson"></textarea>
+                    </div>
+
+                    <div class="control-group">
+                        <button data-action="resetData">🔄 重置数据</button>
+                    </div>
+
+                    <div class="control-group">
+                        <button data-action="exportData">💾 导出数据</button>
+                    </div>
+
+                    <div class="control-group">
+                        <button data-action="clearAll">🗑️ 清空所有</button>
+                    </div>
+                </div>
+
+                <!-- 右侧预览区域 -->
+                <div class="preview-area">
+                    <h2>📊 思维导图预览</h2>
+
+                    <!-- 工具栏 -->
+                    <div class="mindmap-toolbar">
+                        <button data-action="undo">↶ 撤销</button>
+                        <button data-action="redo">↷ 重做</button>
+                        <button data-action="addNewNode">➕ 添加节点</button>
+                        <button data-action="deleteSelectedNode">🗑️ 删除节点</button>
+                        <button data-action="expandAll">⤢ 展开全部</button>
+                        <button data-action="collapseAll">⤡ 折叠全部</button>
+                    </div>
+
+                    <!-- 思维导图编辑器 -->
+                    <div class="mindmap-editor">
+                        <div id="mindmapCanvas" class="mindmap-canvas">
+                            <!-- 节点将通过 JavaScript 动态渲染 -->
+                        </div>
+                    </div>
+
+                    <!-- 调试信息 -->
+                    <div class="debug-info">
+                        <h3>🔍 调试信息</h3>
+                        <pre id="debugInfo"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        // 应用状态
+        const app = {
+            mindmapData: [
+                { id: 1, label: '中心节点', parentId: null },
+                { id: 2, label: '子节点 1', parentId: 1 },
+                { id: 3, label: '子节点 2', parentId: 1 },
+                { id: 4, label: '子节点 1-1', parentId: 2 }
+            ],
+            selectedNode: null,
+            history: [],
+            redoStack: [],
+            nextId: 5,
+
+            init() {
+                this.bindEvents();
+                this.render();
+            },
+
+            bindEvents() {
+                // 绑定按钮事件
+                document.querySelectorAll('button[data-action]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const action = btn.getAttribute('data-action');
+                        if (this[action]) {
+                            this[action]();
+                        }
+                    });
+                });
+
+                // 绑定输入框
+                const textarea = document.getElementById('dataJson');
+                if (textarea) {
+                    textarea.addEventListener('blur', () => this.updateDataFromJson());
+                }
+            },
+
+            render() {
+                // 渲染节点
+                this.renderNodes();
+                // 渲染调试信息
+                this.renderDebugInfo();
+                // 更新 JSON 文本框
+                this.updateJsonTextarea();
+                // 更新按钮状态
+                this.updateButtonStates();
+            },
+
+            renderNodes() {
+                const canvas = document.getElementById('mindmapCanvas');
+                if (!canvas) return;
+
+                if (this.mindmapData.length === 0) {
+                    canvas.innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 50px;"><p>暂无节点，请添加节点开始创建思维导图</p></div>';
+                    return;
+                }
+
+                canvas.innerHTML = '';
+                this.mindmapData.forEach(node => {
+                    const nodeEl = document.createElement('div');
+                    nodeEl.className = 'mindmap-node';
+                    if (node.parentId) {
+                        nodeEl.classList.add('child');
+                    }
+                    if (this.selectedNode && this.selectedNode.id === node.id) {
+                        nodeEl.classList.add('selected');
+                    }
+                    nodeEl.textContent = node.label;
+                    nodeEl.addEventListener('click', () => this.selectNode(node));
+                    canvas.appendChild(nodeEl);
+                });
+            },
+
+            renderDebugInfo() {
+                const debugEl = document.getElementById('debugInfo');
+                if (!debugEl) return;
+
+                const debugData = {
+                    节点总数: this.mindmapData.length,
+                    选中节点: this.selectedNode ? this.selectedNode.label : '无',
+                    选中节点ID: this.selectedNode ? this.selectedNode.id : '无',
+                    历史记录数: this.history.length,
+                    重做栈数: this.redoStack.length,
+                    下一个ID: this.nextId,
+                    数据结构: this.mindmapData
+                };
+
+                debugEl.textContent = JSON.stringify(debugData, null, 2);
+            },
+
+            updateJsonTextarea() {
+                const textarea = document.getElementById('dataJson');
+                if (textarea) {
+                    textarea.value = JSON.stringify(this.mindmapData, null, 2);
+                }
+            },
+
+            updateButtonStates() {
+                const undoBtn = document.querySelector('[data-action="undo"]');
+                const redoBtn = document.querySelector('[data-action="redo"]');
+                const deleteBtn = document.querySelectorAll('[data-action="deleteSelectedNode"]');
+
+                if (undoBtn) undoBtn.disabled = this.history.length === 0;
+                if (redoBtn) redoBtn.disabled = this.redoStack.length === 0;
+                deleteBtn.forEach(btn => btn.disabled = !this.selectedNode);
+            },
+
+            selectNode(node) {
+                if (this.selectedNode && this.selectedNode.id === node.id) {
+                    this.selectedNode = null;
+                } else {
+                    this.selectedNode = node;
+                }
+                console.log('选中节点:', node);
+                this.render();
+            },
+
+            addNewNode() {
+                this.saveHistory();
+                const input = document.getElementById('newNodeLabel');
+                const label = input ? (input.value || `新节点 ${this.nextId}`) : `新节点 ${this.nextId}`;
+                const parentId = this.selectedNode ? this.selectedNode.id : null;
+                
+                const newNode = {
+                    id: this.nextId++,
+                    label: label,
+                    parentId: parentId
+                };
+                
+                this.mindmapData.push(newNode);
+                if (input) input.value = '';
+                console.log('添加节点:', newNode);
+                this.render();
+            },
+
+            deleteSelectedNode() {
+                if (!this.selectedNode) return;
+                
+                this.saveHistory();
+                const nodeId = this.selectedNode.id;
+                
+                // 删除节点及其所有子节点
+                const deleteNodeAndChildren = (id) => {
+                    const children = this.mindmapData.filter(node => node.parentId === id);
+                    children.forEach(child => deleteNodeAndChildren(child.id));
+                    this.mindmapData = this.mindmapData.filter(node => node.id !== id);
+                };
+                
+                deleteNodeAndChildren(nodeId);
+                this.selectedNode = null;
+                console.log('删除节点ID:', nodeId);
+                this.render();
+            },
+
+            updateDataFromJson() {
+                const textarea = document.getElementById('dataJson');
+                if (!textarea) return;
+
+                try {
+                    const newData = JSON.parse(textarea.value);
+                    if (Array.isArray(newData)) {
+                        this.saveHistory();
+                        this.mindmapData = newData;
+                        // 更新 nextId
+                        if (newData.length > 0) {
+                            const maxId = Math.max(...newData.map(n => n.id));
+                            this.nextId = maxId + 1;
+                        } else {
+                            this.nextId = 1;
+                        }
+                        this.render();
+                    }
+                } catch (e) {
+                    alert('JSON 格式错误，请检查数据格式');
+                    console.error('JSON 解析错误:', e);
+                }
+            },
+
+            resetData() {
+                this.saveHistory();
+                this.mindmapData = [
+                    { id: 1, label: '中心节点', parentId: null },
+                    { id: 2, label: '子节点 1', parentId: 1 },
+                    { id: 3, label: '子节点 2', parentId: 1 },
+                    { id: 4, label: '子节点 1-1', parentId: 2 }
+                ];
+                this.selectedNode = null;
+                this.nextId = 5;
+                console.log('重置数据');
+                this.render();
+            },
+
+            exportData() {
+                const dataStr = JSON.stringify(this.mindmapData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'mindmap-data.json';
+                link.click();
+                console.log('导出数据');
+            },
+
+            clearAll() {
+                if (confirm('确定要清空所有节点吗？')) {
+                    this.saveHistory();
+                    this.mindmapData = [];
+                    this.selectedNode = null;
+                    this.nextId = 1;
+                    console.log('清空所有数据');
+                    this.render();
+                }
+            },
+
+            saveHistory() {
+                this.history.push(JSON.parse(JSON.stringify(this.mindmapData)));
+                this.redoStack = [];
+                if (this.history.length > 50) {
+                    this.history.shift();
+                }
+            },
+
+            undo() {
+                if (this.history.length === 0) return;
+                
+                this.redoStack.push(JSON.parse(JSON.stringify(this.mindmapData)));
+                this.mindmapData = this.history.pop();
+                this.selectedNode = null;
+                console.log('撤销操作');
+                this.render();
+            },
+
+            redo() {
+                if (this.redoStack.length === 0) return;
+                
+                this.history.push(JSON.parse(JSON.stringify(this.mindmapData)));
+                this.mindmapData = this.redoStack.pop();
+                this.selectedNode = null;
+                console.log('重做操作');
+                this.render();
+            },
+
+            expandAll() {
+                alert('展开全部功能：此功能用于树形结构的思维导图展开所有折叠的分支。\n当前简化版本不支持折叠功能，所有节点默认显示。');
+                console.log('展开全部');
+            },
+
+            collapseAll() {
+                alert('折叠全部功能：此功能用于树形结构的思维导图折叠所有分支，只显示根节点。\n当前简化版本不支持折叠功能，所有节点默认显示。');
+                console.log('折叠全部');
+            }
+        };
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
