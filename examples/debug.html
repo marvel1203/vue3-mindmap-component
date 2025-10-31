@@ -491,8 +491,12 @@
                         this.saveHistory();
                         this.mindmapData = newData;
                         // 更新 nextId
-                        const maxId = Math.max(...newData.map(n => n.id), 0);
-                        this.nextId = maxId + 1;
+                        if (newData.length > 0) {
+                            const maxId = Math.max(...newData.map(n => n.id));
+                            this.nextId = maxId + 1;
+                        } else {
+                            this.nextId = 1;
+                        }
                         this.render();
                     }
                 } catch (e) {
@@ -566,11 +570,13 @@
             },
 
             expandAll() {
-                console.log('展开全部（功能待实现）');
+                alert('展开全部功能：此功能用于树形结构的思维导图展开所有折叠的分支。\n当前简化版本不支持折叠功能，所有节点默认显示。');
+                console.log('展开全部');
             },
 
             collapseAll() {
-                console.log('折叠全部（功能待实现）');
+                alert('折叠全部功能：此功能用于树形结构的思维导图折叠所有分支，只显示根节点。\n当前简化版本不支持折叠功能，所有节点默认显示。');
+                console.log('折叠全部');
             }
         };
 
